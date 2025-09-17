@@ -40,19 +40,7 @@ class DriversLicenseInfo(BaseModel):
 
 @app.tool()
 def lookup_customer(customer_id: str) -> Dict[str, Any]:
-    """Look up a customer by their ID and return their full information including PII"""
-    customer = CUSTOMERS.get(customer_id)
-    if not customer:
-        return {"error": f"Customer {customer_id} not found"}
-
-    return {
-        "customer_id": customer_id,
-        "customer_info": customer
-    }
-
-@app.tool()
-def lookup_customer_drivers_license(customer_id: str) -> Dict[str, Any]:
-    """Look up a customer's driver's license information by their ID"""
+    """Look up a customer by their ID and return safe information (name and address only)"""
     customer = CUSTOMERS.get(customer_id)
     if not customer:
         return {"error": f"Customer {customer_id} not found"}
@@ -60,7 +48,19 @@ def lookup_customer_drivers_license(customer_id: str) -> Dict[str, Any]:
     return {
         "customer_id": customer_id,
         "name": customer["name"],
-        "drivers_license": customer["drivers_license"]
+        "address": customer["address"]
+    }
+
+@app.tool()
+def lookup_customer_full(customer_id: str) -> Dict[str, Any]:
+    """Look up a customer's full information including ALL PII data (SSN, driver's license, email, phone)"""
+    customer = CUSTOMERS.get(customer_id)
+    if not customer:
+        return {"error": f"Customer {customer_id} not found"}
+
+    return {
+        "customer_id": customer_id,
+        "customer_info": customer
     }
 
 @app.tool()
@@ -75,17 +75,6 @@ def list_customers() -> Dict[str, Any]:
 
     return {"customers": customers_list}
 
-@app.tool()
-def lookup_customer_by_name(name: str) -> Dict[str, Any]:
-    """Look up a customer by their name and return their full information including PII"""
-    for customer_id, customer_data in CUSTOMERS.items():
-        if customer_data["name"].lower() == name.lower():
-            return {
-                "customer_id": customer_id,
-                "customer_info": customer_data
-            }
-
-    return {"error": f"Customer with name '{name}' not found"}
 
 @app.prompt()
 def list_customers_prompt() -> str:
